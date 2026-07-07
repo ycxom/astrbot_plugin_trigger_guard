@@ -72,6 +72,24 @@ class TriggerGuardPageApi:
             ["GET"],
             "TriggerGuard group member list (QQ id autocomplete)",
         )
+        register(
+            f"{PAGE_API_PREFIX}/config_profiles",
+            self.get_config_profiles,
+            ["GET"],
+            "TriggerGuard bot config (abconf) profile list",
+        )
+        register(
+            f"{PAGE_API_PREFIX}/config_routes",
+            self.get_config_routes,
+            ["GET"],
+            "TriggerGuard bot config route list (per group)",
+        )
+        register(
+            f"{PAGE_API_PREFIX}/config_routes",
+            self.post_config_route,
+            ["POST"],
+            "TriggerGuard bot config route (bind/reset)",
+        )
 
     async def get_platforms(self) -> dict[str, Any]:
         return _ok(self.plugin.get_platforms())
@@ -94,6 +112,29 @@ class TriggerGuardPageApi:
         if not platform_id or not group_id:
             return _error("缺少 platform_id 或 group_id 参数")
         return _ok(await self.plugin.get_group_members(platform_id, group_id))
+
+    async def get_config_profiles(self) -> dict[str, Any]:
+        return _ok(self.plugin.get_config_profiles())
+
+    async def get_config_routes(self) -> dict[str, Any]:
+        platform_id = (request.args.get("platform_id") or "").strip()
+        if not platform_id:
+            return _error("缺少 platform_id 参数")
+        return _ok(self.plugin.get_config_routes(platform_id))
+
+    async def post_config_route(self) -> dict[str, Any]:
+        payload = await request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return _error("请求体必须是 JSON 对象")
+        platform_id = str(payload.get("platform_id") or "").strip()
+        group_id = str(payload.get("group_id") or "").strip()
+        conf_id = str(payload.get("conf_id") or "").strip()
+        if not platform_id or not group_id or not conf_id:
+            return _error("缺少 platform_id / group_id / conf_id")
+        result = await self.plugin.set_config_route(platform_id, group_id, conf_id)
+        if not result.get("ok"):
+            return _error(result.get("message") or "设置失败")
+        return _ok(self.plugin.get_config_routes(platform_id))
 
     async def get_overrides(self) -> dict[str, Any]:
         self.plugin.maybe_reload()

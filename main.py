@@ -830,6 +830,68 @@ class TriggerGuard(Star):
         return {"supported": True, "members": members}
 
     # ------------------------------------------------------------------ #
+    # 机器人配置路由（UMO -> abconf 档案），跟 AstrBot 官方"机器人"页面读写的是
+    # 同一份数据（同一个 UmopConfigRouter 单例），这里只是给它做一个更直接的
+    # 入口：选群、选配置、立即生效，不需要在官方那个不太直观的表格里找半天。
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _build_group_umo(platform_id: str, group_id: str) -> str:
+        """群聊 UMO 格式固定是 "协议ID:GroupMessage:群号"（见
+        astrbot.core.platform.message_session.MessageSession.__str__）。"""
+        return f"{platform_id}:GroupMessage:{group_id}"
+
+    def get_config_profiles(self) -> list[dict[str, str]]:
+        """列出所有"机器人配置"(abconf) 档案，包含内置的 "default"。"""
+        mgr = getattr(self.context, "astrbot_config_mgr", None)
+        if mgr is None:
+            return [{"id": "default", "name": "default"}]
+        try:
+            return [{"id": c["id"], "name": c["name"]} for c in mgr.get_conf_list()]
+        except Exception as e:
+            logger.warning(f"[TriggerGuard] 读取机器人配置列表失败: {e}")
+            return [{"id": "default", "name": "default"}]
+
+    def get_config_routes(self, platform_id: str) -> list[dict[str, str]]:
+        """列出某个协议下，已经显式绑定了非默认机器人配置的群。没在这个列表里的
+        群不是"没配置好"，就是单纯在用默认配置——这是正常状态，不是异常。"""
+        mgr = getattr(self.context, "astrbot_config_mgr", None)
+        if mgr is None:
+            return []
+        prefix = f"{platform_id}:GroupMessage:"
+        routes = [
+            {"group_id": umo[len(prefix):], "conf_id": conf_id}
+            for umo, conf_id in mgr.ucr.umop_to_conf_id.items()
+            if umo.startswith(prefix)
+        ]
+        routes.sort(key=lambda r: r["group_id"])
+        return routes
+
+    async def set_config_route(
+        self, platform_id: str, group_id: str, conf_id: str,
+    ) -> dict[str, Any]:
+        """把一个群绑定到指定的机器人配置档案。conf_id="default" 时按 AstrBot
+        官方"机器人"页面同样的语义处理——等价于删除这条路由（不会真的写一条指向
+        "default" 的路由，而是让该群回到默认配置，是同一件事）。"""
+        mgr = getattr(self.context, "astrbot_config_mgr", None)
+        if mgr is None:
+            return {"ok": False, "message": "无法访问 AstrBot 配置管理器"}
+        umo = self._build_group_umo(platform_id, group_id)
+        try:
+            if conf_id == "default":
+                await mgr.ucr.delete_route(umo)
+            else:
+                await mgr.ucr.update_route(umo, conf_id)
+        except ValueError as e:
+            return {"ok": False, "message": str(e)}
+        except Exception as e:
+            logger.warning(
+                f"[TriggerGuard] 设置机器人配置路由失败 ({umo} -> {conf_id}): {e}",
+            )
+            return {"ok": False, "message": str(e)}
+        return {"ok": True}
+
+    # ------------------------------------------------------------------ #
     # Handler A: 群消息级别的拦截 / 唤醒判定
     # ------------------------------------------------------------------ #
 
