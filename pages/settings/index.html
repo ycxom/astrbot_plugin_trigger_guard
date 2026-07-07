@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TriggerGuard 设置</title>
+<style>
+  :root {
+    --bg: #f3f4f7;
+    --panel: #ffffff;
+    --panel-2: #fafbfc;
+    --text: #1a1f2b;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9aa1ad;
+    --border: #e6e8ec;
+    --accent: #4f7cff;
+    --accent-soft: #eef2ff;
+    --accent-contrast: #ffffff;
+    --amber: #b7791f;
+    --amber-soft: #fdf3df;
+    --danger: #d94f3d;
+    --danger-soft: #fbeae7;
+    --success: #1f9d63;
+    --success-soft: #e8f7ef;
+    --teal: #12897a;
+    --teal-soft: #e4f5f2;
+    --input-bg: #ffffff;
+    --chip-bg: #f1f2f5;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --panel: #1c1f26;
+    --panel-2: #20232b;
+    --text: #eceef2;
+    --text-secondary: #9aa1ad;
+    --text-tertiary: #6b7280;
+    --border: #2b2f38;
+    --accent: #7291ff;
+    --accent-soft: #202a4a;
+    --accent-contrast: #0c0e12;
+    --amber: #e0b155;
+    --amber-soft: #3a2f16;
+    --danger: #ef7461;
+    --danger-soft: #3a2320;
+    --success: #4cd18a;
+    --success-soft: #163a29;
+    --teal: #5cc7b8;
+    --teal-soft: #14332f;
+    --input-bg: #14161b;
+    --chip-bg: #262a33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161b;
+      --panel: #1c1f26;
+      --panel-2: #20232b;
+      --text: #eceef2;
+      --text-secondary: #9aa1ad;
+      --text-tertiary: #6b7280;
+      --border: #2b2f38;
+      --accent: #7291ff;
+      --accent-soft: #202a4a;
+      --accent-contrast: #0c0e12;
+      --amber: #e0b155;
+      --amber-soft: #3a2f16;
+      --danger: #ef7461;
+      --danger-soft: #3a2320;
+      --success: #4cd18a;
+      --success-soft: #163a29;
+      --teal: #5cc7b8;
+      --teal-soft: #14332f;
+      --input-bg: #14161b;
+      --chip-bg: #262a33;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  svg.ic { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #app { max-width: 1120px; margin: 0 auto; padding: 22px 20px 80px; }
+
+  .page-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+  .page-header-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .page-header-icon svg.ic { width: 20px; height: 20px; }
+  h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-secondary); margin: 3px 0 0; font-size: 12.5px; line-height: 1.6; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-pill {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; box-shadow: var(--shadow);
+  }
+  .stat-pill-top { display: flex; align-items: center; gap: 6px; color: var(--text-tertiary); font-size: 11.5px; margin-bottom: 6px; }
+  .stat-pill-top svg.ic { width: 13px; height: 13px; }
+  .stat-pill-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+
+  .layout { display: flex; gap: 18px; align-items: flex-start; }
+
+  .sidebar {
+    flex: 0 0 216px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+    position: sticky;
+    top: 20px;
+    box-shadow: var(--shadow);
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+    padding: 6px 10px 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .protocol-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent;
+    border-radius: 10px; padding: 8px 9px; margin-bottom: 3px; cursor: pointer;
+    color: var(--text);
+  }
+  .protocol-item:hover { background: var(--panel-2); }
+  .protocol-item.active { background: var(--accent-soft); }
+  .protocol-item.active .protocol-icon { background: var(--accent); color: var(--accent-contrast); }
+  .protocol-icon {
+    width: 28px; height: 28px; border-radius: 8px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--chip-bg); color: var(--text-secondary);
+  }
+  .protocol-icon svg.ic { width: 15px; height: 15px; }
+  .protocol-icon.legacy { background: var(--amber-soft); color: var(--amber); }
+  .protocol-main { min-width: 0; flex: 1; }
+  .protocol-item .p-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .protocol-item .p-id { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .protocol-count {
+    flex: none; font-size: 10.5px; font-weight: 600; color: var(--text-tertiary);
+    background: var(--chip-bg); border-radius: 999px; padding: 1px 7px;
+  }
+  .protocol-item.active .protocol-count { background: var(--panel); color: var(--accent); }
+  .protocol-icon.tone-accent { background: var(--accent-soft); color: var(--accent); }
+  .protocol-icon.tone-amber { background: var(--amber-soft); color: var(--amber); }
+  .protocol-icon.tone-danger { background: var(--danger-soft); color: var(--danger); }
+  .protocol-icon.tone-teal { background: var(--teal-soft); color: var(--teal); }
+  .protocol-empty { color: var(--text-tertiary); font-size: 12px; padding: 10px; line-height: 1.6; }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 10px 4px; }
+  button.sidebar-collapse-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; background: transparent; border: none; cursor: pointer;
+    padding: 6px 10px 8px; margin: 0; font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  button.sidebar-collapse-toggle:hover { color: var(--text-secondary); }
+  button.sidebar-collapse-toggle svg.ic { width: 14px; height: 14px; transition: transform 0.15s ease; }
+  button.sidebar-collapse-toggle.expanded svg.ic { transform: rotate(180deg); }
+  .protocol-list-collapsible { display: none; }
+  .protocol-list-collapsible.expanded { display: block; }
+
+  .protocol-stats-card {
+    display: none;
+    gap: 22px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .protocol-stat-item { min-width: 110px; }
+  .protocol-stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
+  .protocol-stat-value { font-size: 14px; font-weight: 700; }
+  .protocol-stat-sub { font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-left: 4px; }
+  .protocol-stats-note { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 12.5px; }
+  .protocol-stats-note svg.ic { color: var(--text-tertiary); }
+  .protocol-stats-loading { color: var(--text-tertiary); font-size: 12.5px; }
+
+  .toggle-row {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-secondary);
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 10px; cursor: pointer;
+    flex: none;
+  }
+  .toggle-row input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent); }
+
+  .tag-global {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft);
+    border-radius: 999px; padding: 2px 8px;
+  }
+
+  .main { flex: 1; min-width: 0; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+  }
+  .panel-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+  .panel-icon {
+    width: 30px; height: 30px; border-radius: 9px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel-icon.tone-accent { background: var(--accent-soft); color: var(--accent); }
+  .panel-icon.tone-amber { background: var(--amber-soft); color: var(--amber); }
+  .panel-icon.tone-danger { background: var(--danger-soft); color: var(--danger); }
+  .panel-icon.tone-teal { background: var(--teal-soft); color: var(--teal); }
+  .panel-title { font-size: 13.5px; font-weight: 700; margin: 4px 0 2px; }
+  .panel-desc { color: var(--text-secondary); font-size: 12px; margin: 0 0 14px; line-height: 1.6; }
+  .panel-desc b { color: var(--text); font-weight: 700; }
+  .panel-body { padding-left: 40px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; font-size: 12.5px; }
+  th { color: var(--text-tertiary); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td { border-bottom: 1px solid var(--border); }
+  tbody tr:hover td { background: var(--panel-2); }
+  tr:last-child td { border-bottom: none; }
+  td.cell-protocol { color: var(--text-tertiary); font-size: 11.5px; }
+  .group-name-hint { color: var(--text-tertiary); font-weight: 400; font-size: 11.5px; }
+  .progress-hint { font-size: 11.5px; color: var(--text-secondary); white-space: nowrap; }
+  .progress-hint b { color: var(--accent); font-weight: 700; }
+  .progress-hint-muted { color: var(--text-tertiary); }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  input[type="number"] { width: 80px; }
+  input:disabled { opacity: 0.5; }
+
+  .row-actions { text-align: right; white-space: nowrap; }
+  button {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 7px 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--border); color: var(--text); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+  }
+  button.primary:hover { border-color: var(--accent); color: var(--accent-contrast); opacity: 0.92; }
+  button.icon-btn {
+    padding: 5px 7px;
+    color: var(--text-tertiary);
+    border-color: transparent;
+    background: transparent;
+  }
+  button.icon-btn:hover { background: var(--danger-soft); border-color: var(--danger-soft); color: var(--danger); }
+
+  .add-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .add-row input[type="text"] { flex: 1; min-width: 100px; }
+  .add-row input[type="number"] { flex: 0 0 80px; }
+  .interval-field { display: flex; align-items: center; gap: 5px; flex: none; }
+  .interval-field span { font-size: 11.5px; color: var(--text-tertiary); }
+
+  .chip-list { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; min-height: 22px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--chip-bg);
+    border-radius: 999px;
+    padding: 5px 6px 5px 12px;
+    font-size: 12px;
+  }
+  .chip.tone-accent { background: var(--accent-soft); color: var(--accent); }
+  .chip.tone-amber { background: var(--amber-soft); color: var(--amber); }
+  .chip.tone-danger { background: var(--danger-soft); color: var(--danger); }
+  .chip.tone-teal { background: var(--teal-soft); color: var(--teal); }
+  .chip button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.6;
+    padding: 2px;
+    border-radius: 999px;
+    line-height: 1;
+  }
+  .chip button:hover { opacity: 1; background: rgba(0,0,0,0.08); color: inherit; }
+  .chip button svg.ic { width: 11px; height: 11px; }
+
+  .empty-hint {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-tertiary); font-size: 12px; padding: 10px 2px;
+  }
+  .empty-hint svg.ic { width: 15px; height: 15px; }
+  .scope-hint {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-secondary); font-size: 12px;
+    background: var(--panel-2); border: 1px dashed var(--border);
+    border-radius: 9px; padding: 9px 12px; margin-top: 12px;
+  }
+  .scope-hint svg.ic { color: var(--text-tertiary); }
+
+  .footer-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 0 0;
+    background: linear-gradient(to bottom, transparent, var(--bg) 35%);
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 12.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .toast.success { border-color: var(--success); color: var(--success); }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+  .loading-state { padding: 70px 0; text-align: center; color: var(--text-tertiary); font-size: 12.5px; }
+  .loading-spinner {
+    width: 22px; height: 22px; margin: 0 auto 12px;
+    border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 760px) {
+    .layout { flex-direction: column; }
+    .sidebar { position: static; width: 100%; flex: none; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .panel-body { padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="page-header">
+    <div class="page-header-icon">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <div>
+      <h1>TriggerGuard 触发控制</h1>
+      <p class="subtitle">
+        群 / 用户主动回复触发区间、拉黑、完全屏蔽、唤醒关键词。开关类设置请在
+        插件 -&gt; TriggerGuard -&gt; 配置 中调整。
+      </p>
+    </div>
+  </div>
+
+  <div id="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    加载中...
+  </div>
+
+  <div id="content" style="display:none">
+    <div class="stat-row" id="stat-row"></div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-title">管理项</div>
+        <div id="section-list"></div>
+
+        <div class="sidebar-divider"></div>
+
+        <button type="button" class="sidebar-collapse-toggle" id="protocol-toggle">
+          <span>协议 / 机器人实例</span>
+          <span id="protocol-chevron"></span>
+        </button>
+        <div id="protocol-list" class="protocol-list-collapsible"></div>
+      </aside>
+
+      <div class="main">
+        <div class="protocol-stats-card" id="protocol-stats-card"></div>
+
+        <div class="panel" id="panel-whitelist">
+          <div class="panel-head">
+            <div class="panel-icon tone-accent">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">主动回复白名单</p>
+              <p class="panel-desc">只有加入这里的群才会跑触发区间计数、主动回复；不在名单里的群，即使配了下面的
+              群/用户触发区间也不会生效。<b>留空 = 不对任何群主动回复</b>（白名单模式，默认最安全）。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="active-reply-whitelist-chips" class="chip-list"></div>
+            <div id="active-reply-whitelist-empty" class="empty-hint"></div>
+            <div class="add-row" id="active-reply-whitelist-form">
+              <input type="text" id="active-reply-whitelist-input" placeholder="输入群号后回车或点添加" list="group-datalist" />
+              <button id="active-reply-whitelist-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="active-reply-whitelist-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加白名单群。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-group-interval">
+          <div class="panel-head">
+            <div class="panel-icon tone-accent">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">群聊触发区间</p>
+              <p class="panel-desc">按群号单独设置：这个群大概每"最少~最多"条普通消息主动说一次话，每次触发后重新随机下一轮目标。
+              未设置的群使用配置里的默认区间。支持的协议下，群号输入框会自动补全机器人已加入的群。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead id="group-interval-head"></thead>
+              <tbody id="group-interval-body"></tbody>
+            </table>
+            <div id="group-interval-empty" class="empty-hint"></div>
+            <div class="add-row" id="group-prob-form">
+              <input type="text" id="group-prob-id" placeholder="群号" list="group-datalist" />
+              <div class="interval-field"><span>最少</span><input type="number" id="group-prob-min" min="1" step="1" placeholder="50" /></div>
+              <div class="interval-field"><span>最多</span><input type="number" id="group-prob-max" min="1" step="1" placeholder="100" /></div>
+              <button id="group-prob-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="group-prob-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加群触发区间。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-user-interval">
+          <div class="panel-head">
+            <div class="panel-icon tone-accent">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">用户触发区间</p>
+              <p class="panel-desc">默认按 群号 + QQ 号 设置；勾选"全局"后该用户在这个协议下的所有群都用这个区间计数，不必逐群配置。
+              优先级：本群用户 &gt; 全局用户 &gt; 群区间 &gt; 默认区间。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead id="user-interval-head"></thead>
+              <tbody id="user-interval-body"></tbody>
+            </table>
+            <div id="user-interval-empty" class="empty-hint"></div>
+            <div class="add-row" id="user-prob-form">
+              <label class="toggle-row">
+                <input type="checkbox" id="user-prob-global-toggle" />
+                <span>全局（不限群）</span>
+              </label>
+              <input type="text" id="user-prob-group" placeholder="群号" list="group-datalist" />
+              <input type="text" id="user-prob-user" placeholder="QQ 号" />
+              <div class="interval-field"><span>最少</span><input type="number" id="user-prob-min" min="1" step="1" placeholder="50" /></div>
+              <div class="interval-field"><span>最多</span><input type="number" id="user-prob-max" min="1" step="1" placeholder="100" /></div>
+              <button id="user-prob-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="user-prob-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加用户触发区间。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-group-max-length">
+          <div class="panel-head">
+            <div class="panel-icon tone-accent">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">群消息字数上限</p>
+              <p class="panel-desc">按群号设置单条消息最大字数，超过上限的消息会按"完全屏蔽"处理：不进上下文，
+              也不会触发 LLM（<b>包括直接 @ 唤醒</b>），防止超长消息污染人设/上下文。0 或不设置 = 不限制。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead id="group-max-length-head"></thead>
+              <tbody id="group-max-length-body"></tbody>
+            </table>
+            <div id="group-max-length-empty" class="empty-hint"></div>
+            <div class="add-row" id="group-max-length-form">
+              <input type="text" id="group-max-length-id" placeholder="群号" list="group-datalist" />
+              <div class="interval-field"><span>字数上限</span><input type="number" id="group-max-length-value" min="0" step="1" placeholder="不限制" /></div>
+              <button id="group-max-length-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="group-max-length-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加群字数上限。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-user-max-length">
+          <div class="panel-head">
+            <div class="panel-icon tone-accent">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">用户消息字数上限</p>
+              <p class="panel-desc">默认按 群号 + QQ 号 设置；勾选"全局"后该用户在这个协议下的所有群都用这个上限。
+              优先级：本群用户 &gt; 全局用户 &gt; 群设置 &gt; 默认值。0 或不设置 = 不限制。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead id="user-max-length-head"></thead>
+              <tbody id="user-max-length-body"></tbody>
+            </table>
+            <div id="user-max-length-empty" class="empty-hint"></div>
+            <div class="add-row" id="user-max-length-form">
+              <label class="toggle-row">
+                <input type="checkbox" id="user-max-length-global-toggle" />
+                <span>全局（不限群）</span>
+              </label>
+              <input type="text" id="user-max-length-group" placeholder="群号" list="group-datalist" />
+              <input type="text" id="user-max-length-user" placeholder="QQ 号" />
+              <div class="interval-field"><span>字数上限</span><input type="number" id="user-max-length-value" min="0" step="1" placeholder="不限制" /></div>
+              <button id="user-max-length-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="user-max-length-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加用户字数上限。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-blacklist">
+          <div class="panel-head">
+            <div class="panel-icon tone-amber">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/><path d="M4 4l16 16"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">拉黑名单</p>
+              <p class="panel-desc">保留该用户的聊天记录（正常进入群聊上下文），但该用户不能触发 LLM。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="blacklist-chips" class="chip-list"></div>
+            <div id="blacklist-empty" class="empty-hint"></div>
+            <div class="add-row" id="blacklist-form">
+              <input type="text" id="blacklist-input" placeholder="输入 QQ 号后回车或点添加" />
+              <button id="blacklist-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="blacklist-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加拉黑名单。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-blocklist">
+          <div class="panel-head">
+            <div class="panel-icon tone-danger">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">完全屏蔽名单</p>
+              <p class="panel-desc">该用户的消息不会进入任何上下文（直接终止事件传播），也不能触发 LLM。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="blocklist-chips" class="chip-list"></div>
+            <div id="blocklist-empty" class="empty-hint"></div>
+            <div class="add-row" id="blocklist-form">
+              <input type="text" id="blocklist-input" placeholder="输入 QQ 号后回车或点添加" />
+              <button id="blocklist-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+            <div class="scope-hint" id="blocklist-scope-hint" style="display:none">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              请先在左侧选择一个具体协议实例，再添加屏蔽名单。
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-keywords">
+          <div class="panel-head">
+            <div class="panel-icon tone-teal">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <p class="panel-title">唤醒关键词</p>
+              <p class="panel-desc">消息中包含以下任意关键词即可唤醒机器人，不要求前缀或 @。全局生效，不区分协议。</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="keyword-chips" class="chip-list"></div>
+            <div id="keyword-empty" class="empty-hint"></div>
+            <div class="add-row">
+              <input type="text" id="keyword-input" placeholder="输入关键词后回车或点添加" />
+              <button id="keyword-add">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                添加
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bar">
+          <button id="reload-btn">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+            重新加载
+          </button>
+          <button id="save-btn" class="primary">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<datalist id="group-datalist"></datalist>
+
+<script src="/api/plugin/page/bridge-sdk.js"></script>
+<script>
+(function () {
+  var ALL = "__all__";
+  var LEGACY = "_legacy";
+  var DEFAULT_MIN = 50;
+  var DEFAULT_MAX = 100;
+
+  var ICONS = {
+    all: '<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+    plug: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 2v4M15 2v4"/><path d="M7 6h10v4a5 5 0 0 1-10 0V6Z"/><path d="M12 15v3M9 21h6"/></svg>',
+    legacy: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>',
+    empty: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01M8 16c1.2-1 2.6-1.5 4-1.5s2.8.5 4 1.5"/></svg>',
+    close: '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    interval: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 7v10M20 7v10"/></svg>',
+    userX: '<svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5M17 8l4 4m0-4-4 4"/></svg>',
+    ban: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>',
+    key: '<svg class="ic" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 4l3 3M13 7l3 3"/></svg>',
+    info: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    shieldCheck: '<svg class="ic" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
+    chart: '<svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>',
+    person: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>',
+    personSlash: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/><path d="M4 4l16 16"/></svg>',
+    chat: '<svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    chevron: '<svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>',
+    textLimit: '<svg class="ic" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>'
+  };
+
+  var SECTIONS = [
+    { id: "whitelist", label: "主动回复白名单", icon: ICONS.shieldCheck, tone: "accent", scoped: true },
+    { id: "group_interval", label: "群聊触发区间", icon: ICONS.chart, tone: "accent", scoped: true },
+    { id: "user_interval", label: "用户触发区间", icon: ICONS.person, tone: "accent", scoped: true },
+    { id: "group_max_length", label: "群消息字数上限", icon: ICONS.textLimit, tone: "accent", scoped: true },
+    { id: "user_max_length", label: "用户消息字数上限", icon: ICONS.textLimit, tone: "accent", scoped: true },
+    { id: "blacklist", label: "拉黑名单", icon: ICONS.personSlash, tone: "amber", scoped: true },
+    { id: "blocklist", label: "完全屏蔽名单", icon: ICONS.ban, tone: "danger", scoped: true },
+    { id: "keywords", label: "唤醒关键词", icon: ICONS.chat, tone: "teal", scoped: false }
+  ];
+  var PANEL_ID_BY_SECTION = {
+    whitelist: "panel-whitelist",
+    group_interval: "panel-group-interval",
+    user_interval: "panel-user-interval",
+    group_max_length: "panel-group-max-length",
+    user_max_length: "panel-user-max-length",
+    blacklist: "panel-blacklist",
+    blocklist: "panel-blocklist",
+    keywords: "panel-keywords"
+  };
+
+  var state = {
+    group_interval: {},
+    user_interval: {},
+    user_interval_global: {},
+    blacklist: [],
+    blocklist: [],
+    active_reply_whitelist: [],
+    group_max_length: {},
+    user_max_length: {},
+    user_max_length_global: {},
+    wake_keywords: []
+  };
+  var platforms = []; // [{id, name, description}]
+  var selectedProtocol = ALL;
+  var selectedSection = SECTIONS[0].id;
+  var protocolExpanded = false;
+  var protocolStatsCache = {}; // platform_id -> stats
+  var protocolStatsLoading = {}; // platform_id -> bool
+  var triggerProgressCache = {}; // platform_id -> {group_progress, user_progress, user_global_progress}
+  var triggerProgressLoading = {}; // platform_id -> bool
+
+  function $(id) { return document.getElementById(id); }
+
+  function showToast(message, kind) {
+    var toast = $("toast");
+    toast.textContent = message;
+    toast.className = "toast show" + (kind ? " " + kind : "");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () {
+      toast.className = "toast";
+    }, 2600);
+  }
+
+  function toPosInt(n, fallback) {
+    n = parseInt(n, 10);
+    if (isNaN(n) || n < 1) return fallback;
+    return n;
+  }
+
+  function toNonNegInt(n, fallback) {
+    n = parseInt(n, 10);
+    if (isNaN(n) || n < 0) return fallback;
+    return n;
+  }
+
+  function buildInterval(minRaw, maxRaw) {
+    var lo = toPosInt(minRaw, DEFAULT_MIN);
+    var hi = toPosInt(maxRaw, DEFAULT_MAX);
+    if (hi < lo) hi = lo;
+    return { min: lo, max: hi };
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  // ---- key helpers: 所有 group/user 触发区间、黑白名单条目都以 "协议ID:..." 为前缀 ----
+
+  function splitGroupKey(key) {
+    var idx = key.indexOf(":");
+    if (idx === -1) return { platform: "", group: key };
+    return { platform: key.slice(0, idx), group: key.slice(idx + 1) };
+  }
+  function composeGroupKey(platform, group) { return platform + ":" + group; }
+
+  function splitUserIntervalKey(key) {
+    var i1 = key.indexOf(":");
+    if (i1 === -1) return { platform: "", group: "", user: key };
+    var i2 = key.indexOf(":", i1 + 1);
+    if (i2 === -1) return { platform: key.slice(0, i1), group: key.slice(i1 + 1), user: "" };
+    return { platform: key.slice(0, i1), group: key.slice(i1 + 1, i2), user: key.slice(i2 + 1) };
+  }
+  function composeUserIntervalKey(platform, group, user) { return platform + ":" + group + ":" + user; }
+
+  function splitEntry(entry) {
+    var idx = entry.indexOf(":");
+    if (idx === -1) return { platform: "", user: entry };
+    return { platform: entry.slice(0, idx), user: entry.slice(idx + 1) };
+  }
+  function composeEntry(platform, user) { return platform + ":" + user; }
+
+  function matchesSelected(platform) {
+    return selectedProtocol === ALL || platform === selectedProtocol;
+  }
+
+  function protocolLabel(id) {
+    if (id === LEGACY) return "旧数据(未分类)";
+    var p = platforms.filter(function (x) { return x.id === id; })[0];
+    return p ? (p.name + " · " + p.id) : id;
+  }
+
+  function hasLegacyData() {
+    var keys = Object.keys(state.group_interval).concat(Object.keys(state.user_interval))
+      .concat(Object.keys(state.group_max_length)).concat(Object.keys(state.user_max_length));
+    var entries = state.blacklist.concat(state.blocklist).concat(state.active_reply_whitelist);
+    return keys.some(function (k) { return k.indexOf(LEGACY + ":") === 0; }) ||
+      entries.some(function (e) { return e.indexOf(LEGACY + ":") === 0; });
+  }
+
+  function countsForPlatform(id) {
+    var scope = id === ALL ? null : id;
+    function match(platform) { return scope === null || platform === scope; }
+    var groupN = Object.keys(state.group_interval).filter(function (k) { return match(splitGroupKey(k).platform); }).length;
+    var userN = Object.keys(state.user_interval).filter(function (k) { return match(splitUserIntervalKey(k).platform); }).length;
+    var userGlobalN = Object.keys(state.user_interval_global).filter(function (k) { return match(splitEntry(k).platform); }).length;
+    var blN = state.blacklist.filter(function (e) { return match(splitEntry(e).platform); }).length;
+    var bkN = state.blocklist.filter(function (e) { return match(splitEntry(e).platform); }).length;
+    var wlN = state.active_reply_whitelist.filter(function (e) { return match(splitEntry(e).platform); }).length;
+    return groupN + userN + userGlobalN + blN + bkN + wlN;
+  }
+
+  function countsForSection(id) {
+    switch (id) {
+      case "whitelist":
+        return state.active_reply_whitelist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+      case "group_interval":
+        return Object.keys(state.group_interval).filter(function (k) { return matchesSelected(splitGroupKey(k).platform); }).length;
+      case "user_interval":
+        return Object.keys(state.user_interval).filter(function (k) { return matchesSelected(splitUserIntervalKey(k).platform); }).length +
+          Object.keys(state.user_interval_global).filter(function (k) { return matchesSelected(splitEntry(k).platform); }).length;
+      case "blacklist":
+        return state.blacklist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+      case "blocklist":
+        return state.blocklist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+      case "group_max_length":
+        return Object.keys(state.group_max_length).filter(function (k) { return matchesSelected(splitGroupKey(k).platform); }).length;
+      case "user_max_length":
+        return Object.keys(state.user_max_length).filter(function (k) { return matchesSelected(splitUserIntervalKey(k).platform); }).length +
+          Object.keys(state.user_max_length_global).filter(function (k) { return matchesSelected(splitEntry(k).platform); }).length;
+      case "keywords":
+        return state.wake_keywords.length;
+      default:
+        return 0;
+    }
+  }
+
+  // ---- rendering ----
+
+  function renderStats() {
+    var showAll = selectedProtocol === ALL;
+    var groupN = Object.keys(state.group_interval).filter(function (k) { return matchesSelected(splitGroupKey(k).platform); }).length;
+    var userN = Object.keys(state.user_interval).filter(function (k) { return matchesSelected(splitUserIntervalKey(k).platform); }).length +
+      Object.keys(state.user_interval_global).filter(function (k) { return matchesSelected(splitEntry(k).platform); }).length;
+    var blN = state.blacklist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+    var bkN = state.blocklist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+    var wlN = state.active_reply_whitelist.filter(function (e) { return matchesSelected(splitEntry(e).platform); }).length;
+    var kwN = state.wake_keywords.length;
+
+    var items = [
+      { icon: ICONS.all, label: "白名单群数", value: wlN },
+      { icon: ICONS.interval, label: "群触发区间", value: groupN },
+      { icon: ICONS.userX, label: "用户触发区间", value: userN },
+      { icon: ICONS.userX, label: "拉黑名单", value: blN },
+      { icon: ICONS.ban, label: "完全屏蔽", value: bkN },
+      { icon: ICONS.key, label: "唤醒关键词", value: kwN }
+    ];
+
+    $("stat-row").innerHTML = items.map(function (item) {
+      return '<div class="stat-pill">' +
+        '<div class="stat-pill-top">' + item.icon + '<span>' + escapeHtml(item.label) + (showAll ? "" : "（当前协议）") + '</span></div>' +
+        '<div class="stat-pill-value">' + item.value + '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  function renderSidebar() {
+    var list = $("protocol-list");
+    list.innerHTML = "";
+
+    var items = [{ id: ALL, name: "全部", sub: "不筛选，查看所有协议", icon: ICONS.all, tone: "" }];
+    platforms.forEach(function (p) {
+      items.push({ id: p.id, name: p.name, sub: p.id, icon: ICONS.plug, tone: "" });
+    });
+    if (hasLegacyData()) {
+      items.push({ id: LEGACY, name: "旧数据", sub: "未分类，请手动重新分配", icon: ICONS.legacy, tone: "legacy" });
+    }
+
+    if (platforms.length === 0) {
+      var hint = document.createElement("div");
+      hint.className = "protocol-empty";
+      hint.textContent = "未检测到已启动的协议适配器（可能还没有配置平台，或平台未启动）。";
+      list.appendChild(hint);
+    }
+
+    items.forEach(function (item) {
+      var count = countsForPlatform(item.id);
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "protocol-item" + (selectedProtocol === item.id ? " active" : "");
+      btn.innerHTML =
+        '<div class="protocol-icon' + (item.tone ? " " + item.tone : "") + '">' + item.icon + '</div>' +
+        '<div class="protocol-main">' +
+          '<div class="p-name">' + escapeHtml(item.name) + '</div>' +
+          '<div class="p-id">' + escapeHtml(item.sub) + '</div>' +
+        '</div>' +
+        (count ? '<span class="protocol-count">' + count + '</span>' : '');
+      btn.addEventListener("click", function () {
+        selectedProtocol = item.id;
+        renderAll();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  function renderSectionNav() {
+    var list = $("section-list");
+    list.innerHTML = "";
+    SECTIONS.forEach(function (section) {
+      var count = countsForSection(section.id);
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "protocol-item" + (selectedSection === section.id ? " active" : "");
+      btn.innerHTML =
+        '<div class="protocol-icon tone-' + section.tone + '">' + section.icon + '</div>' +
+        '<div class="protocol-main"><div class="p-name">' + escapeHtml(section.label) + '</div></div>' +
+        (count ? '<span class="protocol-count">' + count + '</span>' : '');
+      btn.addEventListener("click", function () {
+        selectedSection = section.id;
+        renderAll();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  function renderProtocolToggle() {
+    var toggle = $("protocol-toggle");
+    var list = $("protocol-list");
+    toggle.className = "sidebar-collapse-toggle" + (protocolExpanded ? " expanded" : "");
+    list.className = "protocol-list-collapsible" + (protocolExpanded ? " expanded" : "");
+    $("protocol-chevron").innerHTML = ICONS.chevron;
+  }
+
+  function updateSectionVisibility() {
+    Object.keys(PANEL_ID_BY_SECTION).forEach(function (key) {
+      $(PANEL_ID_BY_SECTION[key]).style.display = (selectedSection === key) ? "block" : "none";
+    });
+  }
+
+  function ensureProtocolStats(id) {
+    if (id === ALL || id === LEGACY || !id) return;
+    if (protocolStatsCache[id] || protocolStatsLoading[id]) return;
+    protocolStatsLoading[id] = true;
+    window.AstrBotPluginPage.apiGet("page/protocol_stats", { platform_id: id }).then(function (data) {
+      protocolStatsCache[id] = data || { supported: false, message: "未知错误" };
+    }).catch(function (err) {
+      protocolStatsCache[id] = { supported: false, message: (err && err.message) || "请求失败" };
+    }).finally(function () {
+      protocolStatsLoading[id] = false;
+      // 任意协议的统计到了都重绘一次："全部"视图里的群号旁边可能正等着这份数据补上群名。
+      renderAll();
+    });
+  }
+
+  function groupLabel(platform, groupId) {
+    var stats = protocolStatsCache[platform];
+    if (stats && stats.supported && Array.isArray(stats.groups)) {
+      var g = stats.groups.filter(function (x) { return x.id === groupId; })[0];
+      if (g && g.name) {
+        return escapeHtml(groupId) + ' <span class="group-name-hint">(' + escapeHtml(g.name) + ')</span>';
+      }
+    }
+    return escapeHtml(groupId);
+  }
+
+  function ensureTriggerProgress(id) {
+    if (id === ALL || id === LEGACY || !id) return;
+    if (triggerProgressCache[id] || triggerProgressLoading[id]) return;
+    triggerProgressLoading[id] = true;
+    window.AstrBotPluginPage.apiGet("page/trigger_progress", { platform_id: id }).then(function (data) {
+      triggerProgressCache[id] = data || {};
+    }).catch(function () {
+      triggerProgressCache[id] = {};
+    }).finally(function () {
+      triggerProgressLoading[id] = false;
+      renderAll();
+    });
+  }
+
+  function progressCell(bucket, platform, key) {
+    var cache = triggerProgressCache[platform];
+    var entry = cache && cache[bucket] && cache[bucket][key];
+    if (!entry) {
+      return '<span class="progress-hint progress-hint-muted">尚未开始计数</span>';
+    }
+    return '<span class="progress-hint">剩余 <b>' + entry.remaining + '</b> / 预计 ' + entry.expected + '</span>';
+  }
+
+  function renderProtocolStatsCard() {
+    var card = $("protocol-stats-card");
+    var datalist = $("group-datalist");
+
+    if (selectedSection === "keywords" || selectedProtocol === ALL || selectedProtocol === LEGACY) {
+      card.style.display = "none";
+      datalist.innerHTML = "";
+      return;
+    }
+
+    ensureProtocolStats(selectedProtocol);
+    ensureTriggerProgress(selectedProtocol);
+    var stats = protocolStatsCache[selectedProtocol];
+    card.style.display = "flex";
+
+    if (!stats) {
+      card.innerHTML = '<div class="protocol-stats-loading">正在获取协议统计...</div>';
+      datalist.innerHTML = "";
+      return;
+    }
+
+    if (!stats.supported) {
+      card.innerHTML = '<div class="protocol-stats-note">' + ICONS.info + '<span>' +
+        escapeHtml(stats.message || "该协议暂不支持自动获取统计信息，可以手动输入群号。") + '</span></div>';
+      datalist.innerHTML = "";
+      return;
+    }
+
+    card.innerHTML =
+      '<div class="protocol-stat-item"><div class="protocol-stat-label">机器人 ID</div><div class="protocol-stat-value">' +
+        escapeHtml(stats.bot_id || "-") +
+        (stats.bot_nickname ? '<span class="protocol-stat-sub">' + escapeHtml(stats.bot_nickname) + '</span>' : '') +
+      '</div></div>' +
+      '<div class="protocol-stat-item"><div class="protocol-stat-label">已加入群聊</div><div class="protocol-stat-value">' +
+        stats.group_count + '<span class="protocol-stat-sub">个</span>' +
+      '</div></div>' +
+      '<div class="protocol-stat-item"><div class="protocol-stat-label">群成员合计</div><div class="protocol-stat-value">' +
+        stats.member_count_sum + '<span class="protocol-stat-sub">人 · 跨群未去重</span>' +
+      '</div></div>';
+
+    datalist.innerHTML = (stats.groups || []).map(function (g) {
+      return '<option value="' + escapeAttr(g.id) + '">' + escapeAttr(g.id) + ' — ' + escapeAttr(g.name) + ' (' + g.member_count + '人)</option>';
+    }).join("");
+  }
+
+  function updateFormScopeVisibility() {
+    var scoped = selectedProtocol !== ALL;
+    ["group-prob", "user-prob", "blacklist", "blocklist", "active-reply-whitelist", "group-max-length", "user-max-length"].forEach(function (prefix) {
+      $(prefix + "-form").style.display = scoped ? "flex" : "none";
+      $(prefix + "-scope-hint").style.display = scoped ? "none" : "flex";
+    });
+  }
+
+  function renderGroupInterval() {
+    var showAll = selectedProtocol === ALL;
+    var head = $("group-interval-head");
+    head.innerHTML = showAll
+      ? '<tr><th style="width:15%">协议</th><th style="width:24%">群号</th><th style="width:11%">最少</th><th style="width:11%">最多</th><th style="width:22%">触发进度</th><th></th></tr>'
+      : '<tr><th style="width:28%">群号</th><th style="width:13%">最少</th><th style="width:13%">最多</th><th style="width:26%">触发进度</th><th></th></tr>';
+
+    var body = $("group-interval-body");
+    body.innerHTML = "";
+    var keys = Object.keys(state.group_interval).filter(function (key) {
+      return matchesSelected(splitGroupKey(key).platform);
+    });
+    $("group-interval-empty").innerHTML = keys.length ? "" : (ICONS.empty + "<span>暂无群触发区间</span>");
+    keys.sort().forEach(function (key) {
+      var parts = splitGroupKey(key);
+      if (showAll) { ensureProtocolStats(parts.platform); ensureTriggerProgress(parts.platform); }
+      var value = state.group_interval[key];
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        (showAll ? '<td class="cell-protocol">' + escapeHtml(protocolLabel(parts.platform)) + '</td>' : '') +
+        '<td>' + groupLabel(parts.platform, parts.group) + '</td>' +
+        '<td><input type="number" min="1" step="1" value="' + value.min + '" data-role="group-interval-min" data-key="' + escapeAttr(key) + '" /></td>' +
+        '<td><input type="number" min="1" step="1" value="' + value.max + '" data-role="group-interval-max" data-key="' + escapeAttr(key) + '" /></td>' +
+        '<td>' + progressCell("group_progress", parts.platform, key) + '</td>' +
+        '<td class="row-actions"><button class="icon-btn" title="删除" data-role="group-interval-del" data-key="' + escapeAttr(key) + '">' + ICONS.close + '</button></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderUserInterval() {
+    var showAll = selectedProtocol === ALL;
+    var head = $("user-interval-head");
+    head.innerHTML = showAll
+      ? '<tr><th style="width:12%">协议</th><th style="width:16%">群号</th><th style="width:16%">QQ 号</th><th style="width:10%">最少</th><th style="width:10%">最多</th><th style="width:22%">触发进度</th><th></th></tr>'
+      : '<tr><th style="width:22%">群号</th><th style="width:22%">QQ 号</th><th style="width:12%">最少</th><th style="width:12%">最多</th><th style="width:24%">触发进度</th><th></th></tr>';
+
+    var body = $("user-interval-body");
+    body.innerHTML = "";
+
+    var scopedRows = Object.keys(state.user_interval)
+      .filter(function (key) { return matchesSelected(splitUserIntervalKey(key).platform); })
+      .map(function (key) {
+        var p = splitUserIntervalKey(key);
+        return { scope: "group", key: key, platform: p.platform, group: p.group, user: p.user, value: state.user_interval[key] };
+      });
+    var globalRows = Object.keys(state.user_interval_global)
+      .filter(function (key) { return matchesSelected(splitEntry(key).platform); })
+      .map(function (key) {
+        var p = splitEntry(key);
+        return { scope: "global", key: key, platform: p.platform, group: "", user: p.user, value: state.user_interval_global[key] };
+      });
+    var rows = scopedRows.concat(globalRows).sort(function (a, b) {
+      if (a.platform !== b.platform) return a.platform < b.platform ? -1 : 1;
+      if (a.user !== b.user) return a.user < b.user ? -1 : 1;
+      return a.group < b.group ? -1 : (a.group > b.group ? 1 : 0);
+    });
+
+    $("user-interval-empty").innerHTML = rows.length ? "" : (ICONS.empty + "<span>暂无用户触发区间</span>");
+
+    rows.forEach(function (row) {
+      if (showAll) { ensureProtocolStats(row.platform); ensureTriggerProgress(row.platform); }
+      var groupCell = row.scope === "global"
+        ? '<span class="tag-global">全部群</span>'
+        : groupLabel(row.platform, row.group);
+      var progressBucket = row.scope === "global" ? "user_global_progress" : "user_progress";
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        (showAll ? '<td class="cell-protocol">' + escapeHtml(protocolLabel(row.platform)) + '</td>' : '') +
+        '<td>' + groupCell + '</td>' +
+        '<td>' + escapeHtml(row.user) + '</td>' +
+        '<td><input type="number" min="1" step="1" value="' + row.value.min + '" data-role="user-interval-min" data-scope="' + row.scope + '" data-key="' + escapeAttr(row.key) + '" /></td>' +
+        '<td><input type="number" min="1" step="1" value="' + row.value.max + '" data-role="user-interval-max" data-scope="' + row.scope + '" data-key="' + escapeAttr(row.key) + '" /></td>' +
+        '<td>' + progressCell(progressBucket, row.platform, row.key) + '</td>' +
+        '<td class="row-actions"><button class="icon-btn" title="删除" data-role="user-interval-del" data-scope="' + row.scope + '" data-key="' + escapeAttr(row.key) + '">' + ICONS.close + '</button></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderGroupMaxLength() {
+    var showAll = selectedProtocol === ALL;
+    var head = $("group-max-length-head");
+    head.innerHTML = showAll
+      ? '<tr><th style="width:25%">协议</th><th style="width:40%">群号</th><th style="width:20%">字数上限</th><th></th></tr>'
+      : '<tr><th style="width:45%">群号</th><th style="width:30%">字数上限</th><th></th></tr>';
+
+    var body = $("group-max-length-body");
+    body.innerHTML = "";
+    var keys = Object.keys(state.group_max_length).filter(function (key) {
+      return matchesSelected(splitGroupKey(key).platform);
+    });
+    $("group-max-length-empty").innerHTML = keys.length ? "" : (ICONS.empty + "<span>暂无群字数上限</span>");
+    keys.sort().forEach(function (key) {
+      var parts = splitGroupKey(key);
+      if (showAll) ensureProtocolStats(parts.platform);
+      var value = state.group_max_length[key];
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        (showAll ? '<td class="cell-protocol">' + escapeHtml(protocolLabel(parts.platform)) + '</td>' : '') +
+        '<td>' + groupLabel(parts.platform, parts.group) + '</td>' +
+        '<td><input type="number" min="0" step="1" value="' + value + '" data-role="group-max-length-value" data-key="' + escapeAttr(key) + '" /></td>' +
+        '<td class="row-actions"><button class="icon-btn" title="删除" data-role="group-max-length-del" data-key="' + escapeAttr(key) + '">' + ICONS.close + '</button></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderUserMaxLength() {
+    var showAll = selectedProtocol === ALL;
+    var head = $("user-max-length-head");
+    head.innerHTML = showAll
+      ? '<tr><th style="width:18%">协议</th><th style="width:24%">群号</th><th style="width:24%">QQ 号</th><th style="width:18%">字数上限</th><th></th></tr>'
+      : '<tr><th style="width:30%">群号</th><th style="width:30%">QQ 号</th><th style="width:22%">字数上限</th><th></th></tr>';
+
+    var body = $("user-max-length-body");
+    body.innerHTML = "";
+
+    var scopedRows = Object.keys(state.user_max_length)
+      .filter(function (key) { return matchesSelected(splitUserIntervalKey(key).platform); })
+      .map(function (key) {
+        var p = splitUserIntervalKey(key);
+        return { scope: "group", key: key, platform: p.platform, group: p.group, user: p.user, value: state.user_max_length[key] };
+      });
+    var globalRows = Object.keys(state.user_max_length_global)
+      .filter(function (key) { return matchesSelected(splitEntry(key).platform); })
+      .map(function (key) {
+        var p = splitEntry(key);
+        return { scope: "global", key: key, platform: p.platform, group: "", user: p.user, value: state.user_max_length_global[key] };
+      });
+    var rows = scopedRows.concat(globalRows).sort(function (a, b) {
+      if (a.platform !== b.platform) return a.platform < b.platform ? -1 : 1;
+      if (a.user !== b.user) return a.user < b.user ? -1 : 1;
+      return a.group < b.group ? -1 : (a.group > b.group ? 1 : 0);
+    });
+
+    $("user-max-length-empty").innerHTML = rows.length ? "" : (ICONS.empty + "<span>暂无用户字数上限</span>");
+
+    rows.forEach(function (row) {
+      if (showAll) ensureProtocolStats(row.platform);
+      var groupCell = row.scope === "global"
+        ? '<span class="tag-global">全部群</span>'
+        : groupLabel(row.platform, row.group);
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        (showAll ? '<td class="cell-protocol">' + escapeHtml(protocolLabel(row.platform)) + '</td>' : '') +
+        '<td>' + groupCell + '</td>' +
+        '<td>' + escapeHtml(row.user) + '</td>' +
+        '<td><input type="number" min="0" step="1" value="' + row.value + '" data-role="user-max-length-value" data-scope="' + row.scope + '" data-key="' + escapeAttr(row.key) + '" /></td>' +
+        '<td class="row-actions"><button class="icon-btn" title="删除" data-role="user-max-length-del" data-scope="' + row.scope + '" data-key="' + escapeAttr(row.key) + '">' + ICONS.close + '</button></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderEntryChips(containerId, emptyId, emptyText, tone, list, onRemove) {
+    var showAll = selectedProtocol === ALL;
+    var container = $(containerId);
+    container.innerHTML = "";
+    var filtered = list.filter(function (entry) {
+      return matchesSelected(splitEntry(entry).platform);
+    });
+    $(emptyId).innerHTML = filtered.length ? "" : (ICONS.empty + "<span>" + emptyText + "</span>");
+    filtered.slice().sort().forEach(function (entry) {
+      var parts = splitEntry(entry);
+      var label = showAll ? (protocolLabel(parts.platform) + " · " + parts.user) : parts.user;
+      var chip = document.createElement("span");
+      chip.className = "chip tone-" + tone;
+      chip.innerHTML = '<span>' + escapeHtml(label) + '</span><button type="button">' + ICONS.close + '</button>';
+      chip.querySelector("button").addEventListener("click", function () {
+        onRemove(entry);
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function renderGroupWhitelistChips() {
+    var showAll = selectedProtocol === ALL;
+    var container = $("active-reply-whitelist-chips");
+    container.innerHTML = "";
+    var filtered = state.active_reply_whitelist.filter(function (entry) {
+      return matchesSelected(splitEntry(entry).platform);
+    });
+    $("active-reply-whitelist-empty").innerHTML = filtered.length
+      ? ""
+      : (ICONS.empty + "<span>白名单为空 —— 当前不会对任何群主动回复</span>");
+    filtered.slice().sort().forEach(function (entry) {
+      var parts = splitEntry(entry);
+      if (showAll) ensureProtocolStats(parts.platform);
+      var namePart = groupLabel(parts.platform, parts.user);
+      var label = showAll ? (escapeHtml(protocolLabel(parts.platform)) + " · " + namePart) : namePart;
+      var chip = document.createElement("span");
+      chip.className = "chip tone-accent";
+      chip.innerHTML = '<span>' + label + '</span><button type="button">' + ICONS.close + '</button>';
+      chip.querySelector("button").addEventListener("click", function () {
+        state.active_reply_whitelist = state.active_reply_whitelist.filter(function (x) { return x !== entry; });
+        renderAll();
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function renderKeywordChips() {
+    var container = $("keyword-chips");
+    container.innerHTML = "";
+    $("keyword-empty").innerHTML = state.wake_keywords.length ? "" : (ICONS.empty + "<span>暂无唤醒关键词</span>");
+    state.wake_keywords.slice().sort().forEach(function (item) {
+      var chip = document.createElement("span");
+      chip.className = "chip tone-teal";
+      chip.innerHTML = '<span>' + escapeHtml(item) + '</span><button type="button">' + ICONS.close + '</button>';
+      chip.querySelector("button").addEventListener("click", function () {
+        state.wake_keywords = state.wake_keywords.filter(function (x) { return x !== item; });
+        renderAll();
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function renderAll() {
+    renderStats();
+    renderSectionNav();
+    renderSidebar();
+    renderProtocolToggle();
+    updateSectionVisibility();
+    renderProtocolStatsCard();
+    updateFormScopeVisibility();
+    renderGroupWhitelistChips();
+    renderGroupInterval();
+    renderUserInterval();
+    renderGroupMaxLength();
+    renderUserMaxLength();
+    renderEntryChips("blacklist-chips", "blacklist-empty", "暂无拉黑用户", "amber", state.blacklist, function (entry) {
+      state.blacklist = state.blacklist.filter(function (x) { return x !== entry; });
+      renderAll();
+    });
+    renderEntryChips("blocklist-chips", "blocklist-empty", "暂无屏蔽用户", "danger", state.blocklist, function (entry) {
+      state.blocklist = state.blocklist.filter(function (x) { return x !== entry; });
+      renderAll();
+    });
+    renderKeywordChips();
+  }
+
+  document.addEventListener("click", function (ev) {
+    var el = ev.target.closest("button[data-role]");
+    if (!el) return;
+    var role = el.getAttribute("data-role");
+    var key = el.getAttribute("data-key");
+    var scope = el.getAttribute("data-scope");
+    if (role === "group-interval-del") {
+      delete state.group_interval[key];
+      renderAll();
+    } else if (role === "user-interval-del") {
+      if (scope === "global") delete state.user_interval_global[key];
+      else delete state.user_interval[key];
+      renderAll();
+    } else if (role === "group-max-length-del") {
+      delete state.group_max_length[key];
+      renderAll();
+    } else if (role === "user-max-length-del") {
+      if (scope === "global") delete state.user_max_length_global[key];
+      else delete state.user_max_length[key];
+      renderAll();
+    }
+  });
+
+  document.addEventListener("change", function (ev) {
+    var el = ev.target;
+    if (!el.matches("input[data-role]")) return;
+    var role = el.getAttribute("data-role");
+    var key = el.getAttribute("data-key");
+    var scope = el.getAttribute("data-scope");
+    var val = toPosInt(el.value, 1);
+
+    if (role === "group-interval-min" || role === "group-interval-max") {
+      var g = state.group_interval[key];
+      if (role === "group-interval-min") {
+        g.min = val;
+        if (g.max < g.min) g.max = g.min;
+      } else {
+        g.max = val;
+        if (g.min > g.max) g.min = g.max;
+      }
+      renderAll();
+    } else if (role === "user-interval-min" || role === "user-interval-max") {
+      var map = scope === "global" ? state.user_interval_global : state.user_interval;
+      var u = map[key];
+      if (role === "user-interval-min") {
+        u.min = val;
+        if (u.max < u.min) u.max = u.min;
+      } else {
+        u.max = val;
+        if (u.min > u.max) u.min = u.max;
+      }
+      renderAll();
+    } else if (role === "group-max-length-value") {
+      state.group_max_length[key] = toNonNegInt(el.value, 0);
+    } else if (role === "user-max-length-value") {
+      var lengthMap = scope === "global" ? state.user_max_length_global : state.user_max_length;
+      lengthMap[key] = toNonNegInt(el.value, 0);
+    }
+  });
+
+  $("group-prob-add").addEventListener("click", function () {
+    if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
+    var id = $("group-prob-id").value.trim();
+    if (!id) { showToast("请输入群号", "error"); return; }
+    var groupKey = composeGroupKey(selectedProtocol, id);
+    state.group_interval[groupKey] = buildInterval($("group-prob-min").value, $("group-prob-max").value);
+    // 配了群聊触发区间，就自动把这个群也加进主动回复白名单——不然"配了区间但没加
+    // 白名单"会是最常见的误用（保存时后端也会做同样的兜底同步）。
+    if (state.active_reply_whitelist.indexOf(groupKey) === -1) {
+      state.active_reply_whitelist.push(groupKey);
+    }
+    $("group-prob-id").value = "";
+    $("group-prob-min").value = "";
+    $("group-prob-max").value = "";
+    renderAll();
+  });
+
+  $("user-prob-global-toggle").addEventListener("change", function () {
+    var checked = this.checked;
+    var groupInput = $("user-prob-group");
+    groupInput.disabled = checked;
+    if (checked) groupInput.value = "";
+  });
+
+  $("user-prob-add").addEventListener("click", function () {
+    if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
+    var isGlobal = $("user-prob-global-toggle").checked;
+    var user = $("user-prob-user").value.trim();
+    var interval = buildInterval($("user-prob-min").value, $("user-prob-max").value);
+    if (!user) { showToast("请输入 QQ 号", "error"); return; }
+    if (isGlobal) {
+      state.user_interval_global[composeEntry(selectedProtocol, user)] = interval;
+    } else {
+      var group = $("user-prob-group").value.trim();
+      if (!group) { showToast("请输入群号，或勾选“全局”", "error"); return; }
+      state.user_interval[composeUserIntervalKey(selectedProtocol, group, user)] = interval;
+    }
+    $("user-prob-group").value = "";
+    $("user-prob-user").value = "";
+    $("user-prob-min").value = "";
+    $("user-prob-max").value = "";
+    renderAll();
+  });
+
+  $("group-max-length-add").addEventListener("click", function () {
+    if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
+    var id = $("group-max-length-id").value.trim();
+    if (!id) { showToast("请输入群号", "error"); return; }
+    state.group_max_length[composeGroupKey(selectedProtocol, id)] =
+      toNonNegInt($("group-max-length-value").value, 0);
+    $("group-max-length-id").value = "";
+    $("group-max-length-value").value = "";
+    renderAll();
+  });
+
+  $("user-max-length-global-toggle").addEventListener("change", function () {
+    var checked = this.checked;
+    var groupInput = $("user-max-length-group");
+    groupInput.disabled = checked;
+    if (checked) groupInput.value = "";
+  });
+
+  $("user-max-length-add").addEventListener("click", function () {
+    if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
+    var isGlobal = $("user-max-length-global-toggle").checked;
+    var user = $("user-max-length-user").value.trim();
+    var maxLength = toNonNegInt($("user-max-length-value").value, 0);
+    if (!user) { showToast("请输入 QQ 号", "error"); return; }
+    if (isGlobal) {
+      state.user_max_length_global[composeEntry(selectedProtocol, user)] = maxLength;
+    } else {
+      var group = $("user-max-length-group").value.trim();
+      if (!group) { showToast("请输入群号，或勾选“全局”", "error"); return; }
+      state.user_max_length[composeUserIntervalKey(selectedProtocol, group, user)] = maxLength;
+    }
+    $("user-max-length-group").value = "";
+    $("user-max-length-user").value = "";
+    $("user-max-length-value").value = "";
+    renderAll();
+  });
+
+  function bindEntryAdd(inputId, addBtnId, listKeyGetter, listKeySetter) {
+    function add() {
+      if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
+      var input = $(inputId);
+      var value = input.value.trim();
+      if (!value) return;
+      var entry = composeEntry(selectedProtocol, value);
+      var list = listKeyGetter();
+      if (list.indexOf(entry) === -1) {
+        list.push(entry);
+        listKeySetter(list);
+      }
+      input.value = "";
+      renderAll();
+    }
+    $(addBtnId).addEventListener("click", add);
+    $(inputId).addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); add(); }
+    });
+  }
+
+  bindEntryAdd("blacklist-input", "blacklist-add",
+    function () { return state.blacklist; },
+    function (v) { state.blacklist = v; });
+  bindEntryAdd("blocklist-input", "blocklist-add",
+    function () { return state.blocklist; },
+    function (v) { state.blocklist = v; });
+  bindEntryAdd("active-reply-whitelist-input", "active-reply-whitelist-add",
+    function () { return state.active_reply_whitelist; },
+    function (v) { state.active_reply_whitelist = v; });
+
+  function bindKeywordAdd() {
+    function add() {
+      var input = $("keyword-input");
+      var value = input.value.trim();
+      if (!value) return;
+      if (state.wake_keywords.indexOf(value) === -1) {
+        state.wake_keywords.push(value);
+      }
+      input.value = "";
+      renderAll();
+    }
+    $("keyword-add").addEventListener("click", add);
+    $("keyword-input").addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); add(); }
+    });
+  }
+  bindKeywordAdd();
+
+  function applyServerData(data) {
+    state.group_interval = data.group_interval || {};
+    state.user_interval = data.user_interval || {};
+    state.user_interval_global = data.user_interval_global || {};
+    state.blacklist = data.blacklist || [];
+    state.blocklist = data.blocklist || [];
+    state.active_reply_whitelist = data.active_reply_whitelist || [];
+    state.group_max_length = data.group_max_length || {};
+    state.user_max_length = data.user_max_length || {};
+    state.user_max_length_global = data.user_max_length_global || {};
+    state.wake_keywords = data.wake_keywords || [];
+    renderAll();
+  }
+
+  function load() {
+    $("loading").style.display = "block";
+    $("content").style.display = "none";
+    // 触发进度是活的计数状态，每次"重新加载"都应该拿最新的，不能沿用旧缓存。
+    triggerProgressCache = {};
+    triggerProgressLoading = {};
+    Promise.all([
+      window.AstrBotPluginPage.apiGet("page/overrides"),
+      window.AstrBotPluginPage.apiGet("page/platforms").catch(function () { return []; })
+    ]).then(function (results) {
+      applyServerData(results[0] || {});
+      platforms = results[1] || [];
+      renderAll();
+      $("loading").style.display = "none";
+      $("content").style.display = "block";
+    }).catch(function (err) {
+      $("loading").innerHTML = "加载失败：" + escapeHtml(err && err.message ? err.message : err);
+    });
+  }
+
+  function save() {
+    var saveBtn = $("save-btn");
+    saveBtn.disabled = true;
+    var originalHtml = saveBtn.innerHTML;
+    saveBtn.textContent = "保存中...";
+    window.AstrBotPluginPage.apiPost("page/overrides", {
+      group_interval: state.group_interval,
+      user_interval: state.user_interval,
+      user_interval_global: state.user_interval_global,
+      blacklist: state.blacklist,
+      blocklist: state.blocklist,
+      active_reply_whitelist: state.active_reply_whitelist,
+      group_max_length: state.group_max_length,
+      user_max_length: state.user_max_length,
+      user_max_length_global: state.user_max_length_global,
+      wake_keywords: state.wake_keywords
+    }).then(function (data) {
+      applyServerData(data || {});
+      showToast("已保存", "success");
+    }).catch(function (err) {
+      showToast("保存失败：" + (err && err.message ? err.message : err), "error");
+    }).finally(function () {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalHtml;
+    });
+  }
+
+  $("save-btn").addEventListener("click", save);
+  $("reload-btn").addEventListener("click", load);
+  $("protocol-toggle").addEventListener("click", function () {
+    protocolExpanded = !protocolExpanded;
+    renderProtocolToggle();
+  });
+
+  window.AstrBotPluginPage.ready().then(load).catch(load);
+})();
+</script>
+</body>
+</html>

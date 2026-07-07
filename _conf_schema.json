@@ -1,0 +1,38 @@
+{
+  "enable": {
+    "description": "启用触发控制器",
+    "type": "bool",
+    "hint": "关闭后本插件完全不介入，行为等同于未安装",
+    "default": true
+  },
+  "active_reply_enable": {
+    "description": "启用群聊主动回复（计数触发）",
+    "type": "bool",
+    "hint": "由本插件独立实现的主动回复判定。开启后会强制关闭 AstrBot 内置的 provider_ltm_settings.active_reply.enable（写回主配置文件），避免两边各自独立判定导致实际触发频率明显偏离下面设置的数值。",
+    "default": false
+  },
+  "global_trigger_interval_min": {
+    "description": "默认触发间隔下限（条）",
+    "type": "int",
+    "hint": "群/用户没有单独设置区间时，每隔 min~max 条普通群消息主动触发一次，每次触发后重新随机下一轮目标值。",
+    "default": 50
+  },
+  "global_trigger_interval_max": {
+    "description": "默认触发间隔上限（条）",
+    "type": "int",
+    "hint": "必须 >= 下限。",
+    "default": 100
+  },
+  "debug_log": {
+    "description": "详细日志（调试模式）",
+    "type": "bool",
+    "hint": "开启后，每条群消息的触发判定过程都会以 INFO 级别打印（是否在白名单里、当前计数/阈值、是否命中关键词等），不需要改 AstrBot 全局日志级别就能看到完整过程，排查“配了但不触发”很有用。排查完建议关掉，避免大群消息刷屏——真正触发主动回复时的日志不受此开关影响，始终可见。",
+    "default": false
+  },
+  "global_max_length": {
+    "description": "默认单条消息最大字数",
+    "type": "int",
+    "hint": "群/用户没有单独设置字数上限时使用的默认值。0 = 不限制。超过上限的消息会被当作“完全屏蔽”处理：不记录进群聊上下文，也不会触发 LLM（包括直接 @ 机器人），防止超长消息污染人设/上下文。用户设置优先级高于群设置。",
+    "default": 0
+  }
+}
