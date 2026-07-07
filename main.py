@@ -872,7 +872,13 @@ class TriggerGuard(Star):
     ) -> dict[str, Any]:
         """把一个群绑定到指定的机器人配置档案。conf_id="default" 时按 AstrBot
         官方"机器人"页面同样的语义处理——等价于删除这条路由（不会真的写一条指向
-        "default" 的路由，而是让该群回到默认配置，是同一件事）。"""
+        "default" 的路由，而是让该群回到默认配置，是同一件事）。
+
+        绑完路由之后还会检查目标配置文件是否开启了 platform_settings.enable_id_
+        white_list：开了的话，光绑路由没用——WhitelistCheckStage 会在消息到达任何
+        插件之前，就因为群不在那份配置自己的 id_whitelist 里而直接终止事件传播。
+        所以这里顺手把群号也追加进目标配置的白名单，两个设置项本来就是配套的。
+        """
         mgr = getattr(self.context, "astrbot_config_mgr", None)
         if mgr is None:
             return {"ok": False, "message": "无法访问 AstrBot 配置管理器"}
@@ -889,7 +895,47 @@ class TriggerGuard(Star):
                 f"[TriggerGuard] 设置机器人配置路由失败 ({umo} -> {conf_id}): {e}",
             )
             return {"ok": False, "message": str(e)}
-        return {"ok": True}
+
+        whitelist_synced = self._sync_group_into_config_whitelist(mgr, conf_id, group_id)
+        return {"ok": True, "whitelist_synced": whitelist_synced}
+
+    def _sync_group_into_config_whitelist(
+        self, mgr: Any, conf_id: str, group_id: str,
+    ) -> bool:
+        """若 conf_id 对应的机器人配置开启了 id 白名单，就把这个群追加进它的
+        id_whitelist 并保存；没开就什么都不做（不会替用户偷偷打开这个开关）。
+        返回是否真的追加过（供调用方决定要不要在 UI 上额外提示一句）。"""
+        target_conf = mgr.confs.get(conf_id)
+        if target_conf is None:
+            return False
+        try:
+            platform_settings = target_conf.get("platform_settings")
+            if not isinstance(platform_settings, dict):
+                return False
+            if not platform_settings.get("enable_id_white_list"):
+                return False
+
+            whitelist = platform_settings.get("id_whitelist")
+            if not isinstance(whitelist, list):
+                whitelist = []
+                platform_settings["id_whitelist"] = whitelist
+
+            group_id_str = str(group_id).strip()
+            existing = {str(x).strip() for x in whitelist}
+            if group_id_str and group_id_str not in existing:
+                whitelist.append(group_id_str)
+                target_conf.save_config()
+                logger.info(
+                    f"[TriggerGuard] 机器人配置 {conf_id} 开启了白名单，已自动把群 "
+                    f"{group_id_str} 加入它的 id_whitelist，否则路由绑定不会生效。",
+                )
+                return True
+            return False
+        except Exception as e:
+            logger.warning(
+                f"[TriggerGuard] 同步群 {group_id} 到机器人配置 {conf_id} 的白名单失败: {e}",
+            )
+            return False
 
     # ------------------------------------------------------------------ #
     # Handler A: 群消息级别的拦截 / 唤醒判定

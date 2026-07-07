@@ -134,7 +134,10 @@ class TriggerGuardPageApi:
         result = await self.plugin.set_config_route(platform_id, group_id, conf_id)
         if not result.get("ok"):
             return _error(result.get("message") or "设置失败")
-        return _ok(self.plugin.get_config_routes(platform_id))
+        return _ok({
+            "routes": self.plugin.get_config_routes(platform_id),
+            "whitelist_synced": bool(result.get("whitelist_synced")),
+        })
 
     async def get_overrides(self) -> dict[str, Any]:
         self.plugin.maybe_reload()

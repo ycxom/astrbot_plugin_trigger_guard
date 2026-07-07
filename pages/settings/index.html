@@ -1174,10 +1174,11 @@
       platform_id: platform,
       group_id: groupId,
       conf_id: confId
-    }).then(function (routes) {
-      configRoutesCache[platform] = routes || [];
+    }).then(function (data) {
+      data = data || {};
+      configRoutesCache[platform] = data.routes || [];
       renderConfigRoutes();
-      showToast("已生效", "success");
+      showToast(data.whitelist_synced ? "已生效，并自动加入该配置的白名单" : "已生效", "success");
     }).catch(function (err) {
       showToast("设置失败：" + (err && err.message ? err.message : err), "error");
     });
