@@ -66,6 +66,12 @@ class TriggerGuardPageApi:
             ["GET"],
             "TriggerGuard trigger progress (remaining/expected message count)",
         )
+        register(
+            f"{PAGE_API_PREFIX}/group_members",
+            self.get_group_members,
+            ["GET"],
+            "TriggerGuard group member list (QQ id autocomplete)",
+        )
 
     async def get_platforms(self) -> dict[str, Any]:
         return _ok(self.plugin.get_platforms())
@@ -81,6 +87,13 @@ class TriggerGuardPageApi:
         if not platform_id:
             return _error("缺少 platform_id 参数")
         return _ok(self.plugin.get_trigger_progress(platform_id))
+
+    async def get_group_members(self) -> dict[str, Any]:
+        platform_id = (request.args.get("platform_id") or "").strip()
+        group_id = (request.args.get("group_id") or "").strip()
+        if not platform_id or not group_id:
+            return _error("缺少 platform_id 或 group_id 参数")
+        return _ok(await self.plugin.get_group_members(platform_id, group_id))
 
     async def get_overrides(self) -> dict[str, Any]:
         self.plugin.maybe_reload()

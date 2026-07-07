@@ -167,6 +167,21 @@
   .protocol-list-collapsible { display: none; }
   .protocol-list-collapsible.expanded { display: block; }
 
+  .member-lookup { padding: 10px 4px 2px; }
+  .member-lookup-select {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    margin-bottom: 6px;
+  }
+  .member-lookup-select:focus { outline: none; border-color: var(--accent); }
+  .member-lookup-hint { color: var(--text-tertiary); font-size: 11px; line-height: 1.5; margin: 0; padding: 0 2px; }
+
   .protocol-stats-card {
     display: none;
     gap: 22px;
@@ -408,6 +423,12 @@
           <span id="protocol-chevron"></span>
         </button>
         <div id="protocol-list" class="protocol-list-collapsible"></div>
+
+        <div class="member-lookup" id="member-lookup" style="display:none">
+          <div class="sidebar-title">群成员速查</div>
+          <select id="member-lookup-group" class="member-lookup-select"></select>
+          <p class="member-lookup-hint">选一个群，下方各面板的 QQ 号输入框会自动补全该群成员（仅 aiocqhttp 支持）。</p>
+        </div>
       </aside>
 
       <div class="main">
@@ -497,7 +518,7 @@
                 <span>全局（不限群）</span>
               </label>
               <input type="text" id="user-prob-group" placeholder="群号" list="group-datalist" />
-              <input type="text" id="user-prob-user" placeholder="QQ 号" />
+              <input type="text" id="user-prob-user" placeholder="QQ 号" list="member-datalist" />
               <div class="interval-field"><span>最少</span><input type="number" id="user-prob-min" min="1" step="1" placeholder="50" /></div>
               <div class="interval-field"><span>最多</span><input type="number" id="user-prob-max" min="1" step="1" placeholder="100" /></div>
               <button id="user-prob-add">
@@ -567,7 +588,7 @@
                 <span>全局（不限群）</span>
               </label>
               <input type="text" id="user-max-length-group" placeholder="群号" list="group-datalist" />
-              <input type="text" id="user-max-length-user" placeholder="QQ 号" />
+              <input type="text" id="user-max-length-user" placeholder="QQ 号" list="member-datalist" />
               <div class="interval-field"><span>字数上限</span><input type="number" id="user-max-length-value" min="0" step="1" placeholder="不限制" /></div>
               <button id="user-max-length-add">
                 <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -595,7 +616,7 @@
             <div id="blacklist-chips" class="chip-list"></div>
             <div id="blacklist-empty" class="empty-hint"></div>
             <div class="add-row" id="blacklist-form">
-              <input type="text" id="blacklist-input" placeholder="输入 QQ 号后回车或点添加" />
+              <input type="text" id="blacklist-input" placeholder="输入 QQ 号后回车或点添加" list="member-datalist" />
               <button id="blacklist-add">
                 <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 添加
@@ -622,7 +643,7 @@
             <div id="blocklist-chips" class="chip-list"></div>
             <div id="blocklist-empty" class="empty-hint"></div>
             <div class="add-row" id="blocklist-form">
-              <input type="text" id="blocklist-input" placeholder="输入 QQ 号后回车或点添加" />
+              <input type="text" id="blocklist-input" placeholder="输入 QQ 号后回车或点添加" list="member-datalist" />
               <button id="blocklist-add">
                 <svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 添加
@@ -675,6 +696,7 @@
 
 <div class="toast" id="toast"></div>
 <datalist id="group-datalist"></datalist>
+<datalist id="member-datalist"></datalist>
 
 <script src="/api/plugin/page/bridge-sdk.js"></script>
 <script>
@@ -745,6 +767,8 @@
   var protocolStatsLoading = {}; // platform_id -> bool
   var triggerProgressCache = {}; // platform_id -> {group_progress, user_progress, user_global_progress}
   var triggerProgressLoading = {}; // platform_id -> bool
+  var groupMembersCache = {}; // "platform:group" -> {supported, members, message}
+  var groupMembersLoading = {}; // "platform:group" -> bool
 
   function $(id) { return document.getElementById(id); }
 
@@ -1013,6 +1037,65 @@
       return '<span class="progress-hint progress-hint-muted">尚未开始计数</span>';
     }
     return '<span class="progress-hint">剩余 <b>' + entry.remaining + '</b> / 预计 ' + entry.expected + '</span>';
+  }
+
+  function ensureGroupMembers(platform, groupId) {
+    if (!platform || !groupId) return;
+    var cacheKey = platform + ":" + groupId;
+    if (groupMembersCache[cacheKey] || groupMembersLoading[cacheKey]) {
+      renderMemberDatalist(cacheKey);
+      return;
+    }
+    groupMembersLoading[cacheKey] = true;
+    window.AstrBotPluginPage.apiGet("page/group_members", { platform_id: platform, group_id: groupId }).then(function (data) {
+      groupMembersCache[cacheKey] = data || { supported: false, message: "未知错误" };
+    }).catch(function (err) {
+      groupMembersCache[cacheKey] = { supported: false, message: (err && err.message) || "请求失败" };
+    }).finally(function () {
+      groupMembersLoading[cacheKey] = false;
+      renderMemberDatalist(cacheKey);
+    });
+  }
+
+  function renderMemberDatalist(cacheKey) {
+    var datalist = $("member-datalist");
+    var data = groupMembersCache[cacheKey];
+    if (!data) {
+      datalist.innerHTML = "";
+      return;
+    }
+    if (!data.supported) {
+      datalist.innerHTML = "";
+      showToast(data.message || "该协议暂不支持自动获取群成员", "error");
+      return;
+    }
+    datalist.innerHTML = (data.members || []).map(function (m) {
+      var label = m.card || m.nickname || "";
+      return '<option value="' + escapeAttr(m.id) + '">' + escapeAttr(m.id) + (label ? " — " + escapeAttr(label) : "") + '</option>';
+    }).join("");
+  }
+
+  function renderMemberLookup() {
+    var container = $("member-lookup");
+    var select = $("member-lookup-group");
+    if (selectedProtocol === ALL || selectedProtocol === LEGACY) {
+      container.style.display = "none";
+      return;
+    }
+    var stats = protocolStatsCache[selectedProtocol];
+    if (!stats || !stats.supported || !Array.isArray(stats.groups) || !stats.groups.length) {
+      container.style.display = "none";
+      return;
+    }
+    container.style.display = "block";
+    var currentValue = select.value;
+    select.innerHTML = '<option value="">选择群以补全成员 QQ 号…</option>' +
+      stats.groups.map(function (g) {
+        return '<option value="' + escapeAttr(g.id) + '">' + escapeAttr(g.id) + ' — ' + escapeAttr(g.name) + '</option>';
+      }).join("");
+    if (currentValue && select.querySelector('option[value="' + currentValue.replace(/"/g, "") + '"]')) {
+      select.value = currentValue;
+    }
   }
 
   function renderProtocolStatsCard() {
@@ -1289,6 +1372,7 @@
     renderProtocolToggle();
     updateSectionVisibility();
     renderProtocolStatsCard();
+    renderMemberLookup();
     updateFormScopeVisibility();
     renderGroupWhitelistChips();
     renderGroupInterval();
@@ -1390,6 +1474,13 @@
     if (checked) groupInput.value = "";
   });
 
+  $("user-prob-group").addEventListener("change", function () {
+    var groupId = this.value.trim();
+    if (groupId && selectedProtocol !== ALL && selectedProtocol !== LEGACY) {
+      ensureGroupMembers(selectedProtocol, groupId);
+    }
+  });
+
   $("user-prob-add").addEventListener("click", function () {
     if (selectedProtocol === ALL) { showToast("请先在左侧选择一个协议", "error"); return; }
     var isGlobal = $("user-prob-global-toggle").checked;
@@ -1426,6 +1517,13 @@
     var groupInput = $("user-max-length-group");
     groupInput.disabled = checked;
     if (checked) groupInput.value = "";
+  });
+
+  $("user-max-length-group").addEventListener("change", function () {
+    var groupId = this.value.trim();
+    if (groupId && selectedProtocol !== ALL && selectedProtocol !== LEGACY) {
+      ensureGroupMembers(selectedProtocol, groupId);
+    }
   });
 
   $("user-max-length-add").addEventListener("click", function () {
@@ -1513,9 +1611,12 @@
   function load() {
     $("loading").style.display = "block";
     $("content").style.display = "none";
-    // 触发进度是活的计数状态，每次"重新加载"都应该拿最新的，不能沿用旧缓存。
+    // 触发进度是活的计数状态，群成员也可能随时变化，每次"重新加载"都应该拿最新的。
     triggerProgressCache = {};
     triggerProgressLoading = {};
+    groupMembersCache = {};
+    groupMembersLoading = {};
+    $("member-datalist").innerHTML = "";
     Promise.all([
       window.AstrBotPluginPage.apiGet("page/overrides"),
       window.AstrBotPluginPage.apiGet("page/platforms").catch(function () { return []; })
@@ -1562,6 +1663,13 @@
   $("protocol-toggle").addEventListener("click", function () {
     protocolExpanded = !protocolExpanded;
     renderProtocolToggle();
+  });
+
+  $("member-lookup-group").addEventListener("change", function () {
+    var groupId = this.value.trim();
+    $("member-datalist").innerHTML = "";
+    if (!groupId || selectedProtocol === ALL || selectedProtocol === LEGACY) return;
+    ensureGroupMembers(selectedProtocol, groupId);
   });
 
   window.AstrBotPluginPage.ready().then(load).catch(load);

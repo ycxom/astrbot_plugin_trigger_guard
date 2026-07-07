@@ -770,6 +770,65 @@ class TriggerGuard(Star):
             "groups": groups,
         }
 
+    async def get_group_members(self, platform_id: str, group_id: str) -> dict[str, Any]:
+        """尝试获取某个群的成员列表，供 UI 设置页给 QQ 号输入框做自动补全
+        （黑名单/完全屏蔽名单/用户触发区间/用户字数上限这几个面板都要填 QQ 号）。
+
+        跟 get_protocol_stats 一样，目前只有 aiocqhttp（OneBot v11）支持，而且是
+        按需/按群拉取，不会在打开设置页时就把机器人所在所有群的成员一次性拉全
+        （群成员可能成百上千，一次性拉代价太大）。
+        """
+        manager = getattr(self.context, "platform_manager", None)
+        inst = None
+        for candidate in list(getattr(manager, "platform_insts", []) or []):
+            try:
+                if str(candidate.meta().id) == platform_id:
+                    inst = candidate
+                    break
+            except Exception:
+                continue
+
+        if inst is None:
+            return {"supported": False, "message": "未找到该协议实例，可能已停止运行。"}
+
+        platform_name = inst.meta().name
+        if platform_name != "aiocqhttp":
+            return {
+                "supported": False,
+                "message": (
+                    f"协议类型 {platform_name} 暂不支持自动获取群成员列表，"
+                    "目前仅 aiocqhttp（OneBot v11）支持，可以手动输入 QQ 号。"
+                ),
+            }
+
+        try:
+            group_id_int = int(group_id)
+        except (TypeError, ValueError):
+            return {"supported": False, "message": "群号格式不正确。"}
+
+        try:
+            client = inst.get_client()
+            raw_members = await client.call_action(
+                "get_group_member_list", group_id=group_id_int,
+            )
+        except Exception as e:
+            logger.warning(
+                f"[TriggerGuard] 获取群成员失败 ({platform_id}:{group_id}): {e}",
+            )
+            return {"supported": False, "message": f"调用协议接口失败: {e}"}
+
+        members = [
+            {
+                "id": str(m.get("user_id")),
+                "nickname": m.get("nickname") or "",
+                "card": m.get("card") or "",
+            }
+            for m in (raw_members or [])
+        ]
+        members.sort(key=lambda m: m["id"])
+
+        return {"supported": True, "members": members}
+
     # ------------------------------------------------------------------ #
     # Handler A: 群消息级别的拦截 / 唤醒判定
     # ------------------------------------------------------------------ #

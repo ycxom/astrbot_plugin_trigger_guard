@@ -1,5 +1,5 @@
 name: astrbot_plugin_trigger_guard
 desc: "群聊触发控制器：独立用户/群聊触发概率、拉黑（保留上下文不可触发）、完全屏蔽（剔除上下文且不可触发）、关键词包含唤醒，并在请求 LLM 前统一拦截"
-version: v1.0.0
+version: v1.0.1
 author: ycxom
 repo: https://github.com/ycxom/astrbot_plugin_trigger_guard
