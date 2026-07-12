@@ -69,6 +69,7 @@ from typing import Any
 
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent, filter
+from astrbot.api.message_components import Poke
 from astrbot.api.platform import MessageType
 from astrbot.api.provider import ProviderRequest
 from astrbot.api.star import Context, Star, StarTools
@@ -943,10 +944,11 @@ class TriggerGuard(Star):
 
     @filter.platform_adapter_type(filter.PlatformAdapterType.ALL, priority=5000)
     async def guard_message(self, event: AstrMessageEvent) -> None:
-        """机器人自身消息、超长消息、拉黑/完全屏蔽名单里的用户，都不会走到
-        `_should_trigger`，因此都不计入任何作用域的触发计数器——这是靠下面的
+        """机器人自身消息、超长消息、戳一戳（Poke）、拉黑/完全屏蔽名单里的用户，都不会
+        走到 `_should_trigger`，因此都不计入任何作用域的触发计数器——这是靠下面的
         return 顺序保证的，不是巧合：自身消息第一个挡，然后是字数上限，再是
-        blocklist/blacklist，全部都在计数判定之前 return。"""
+        blocklist/blacklist，戳一戳排在黑/屏蔽名单判断之后（所以照样受名单约束），
+        全部都在计数判定之前 return。"""
         if not self._enable:
             return
         if event.get_message_type() != MessageType.GROUP_MESSAGE:
@@ -1017,6 +1019,18 @@ class TriggerGuard(Star):
             )
             event.is_at_or_wake_command = True
             event.is_wake = True
+            return
+
+        if any(isinstance(c, Poke) for c in event.get_messages()):
+            # 戳一戳（QQ 的 poke 通知）在 AstrBot 里跟普通消息走同一条管道
+            # （MessageType 都是 GROUP_MESSAGE，message_str 是空字符串），不是一句
+            # 真正的对话内容，不该算进触发计数——不然一顿连续戳就能把计数器戳满，
+            # 跟机器人自己发消息不该计数是同一个道理。拉黑/完全屏蔽名单在这之前已经
+            # 检查过了，戳一戳照样受它们约束；这里只是不让它参与计数。
+            self._dlog(
+                f"[TriggerGuard] platform={platform_id} group={group_id} sender={sender_id} "
+                "戳一戳消息，跳过触发判定（不计入计数）。",
+            )
             return
 
         if not self._active_reply_enable:

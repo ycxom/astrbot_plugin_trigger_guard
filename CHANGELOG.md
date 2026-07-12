@@ -3,6 +3,16 @@
 本项目的版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)，格式参考
 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
+## [1.0.3] - 2026-07-13
+
+### Added
+
+- **戳一戳（Poke）不再计入触发计数**：AstrBot 里戳一戳跟普通消息走同一条管道
+  （`MessageType.GROUP_MESSAGE`，`message_str` 为空字符串），之前会被当成一条
+  "普通消息"计入触发计数器；现在会识别消息里的 `Poke` 组件并跳过计数，逻辑上跟
+  "机器人自身消息不计入计数"是同一类修复。拉黑/完全屏蔽名单仍然正常拦截戳一戳
+  （判定顺序在这条修复之前），不受影响。
+
 ## [1.0.2] - 2026-07-08
 
 ### Added
